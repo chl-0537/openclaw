@@ -83,6 +83,12 @@
             "input": ["text"],
             "contextWindow": 1024000,
             "maxTokens": 64000,
+            "cost": {
+              "input": 0.834,
+              "output": 2.501,
+              "cacheRead": 0.042,
+              "cacheWrite": 0
+            },
             "compat": {
               "supportsUsageInStreaming": true,
               "supportsReasoningEffort": true,
@@ -116,6 +122,12 @@
             "input": ["text"],
             "contextWindow": 1024000,
             "maxTokens": 64000,
+            "cost": {
+              "input": 0.834,
+              "output": 2.501,
+              "cacheRead": 0.042,
+              "cacheWrite": 0
+            },
             "compat": {
               "supportsUsageInStreaming": true,
               "supportsReasoningEffort": true,
