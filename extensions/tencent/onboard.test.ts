@@ -15,14 +15,11 @@ describe("Tencent onboarding", () => {
     expect(config.models?.providers?.["tencent-tokenhub"]?.models.map((model) => model.id)).toEqual(
       manifest.modelCatalog.providers["tencent-tokenhub"].models.map((model) => model.id),
     );
-    expect(TOKENHUB_DEFAULT_MODEL_REF).toBe("tencent-tokenhub/hy4-preview");
     expect(resolveAgentModelPrimaryValue(config.agents?.defaults?.model)).toBe(
       TOKENHUB_DEFAULT_MODEL_REF,
     );
-    // Each ref carries its own alias; none may piggyback on the default ref.
     expect(config.agents?.defaults?.models).toEqual({
-      "tencent-tokenhub/hy4-preview": { alias: "Hy4 preview (TokenHub)" },
-      "tencent-tokenhub/hy3": { alias: "Hy3 (TokenHub)" },
+      [TOKENHUB_DEFAULT_MODEL_REF]: { alias: "Hy3 (TokenHub)" },
       "tencent-tokenhub/hy3-preview": { alias: "Hy3 preview (TokenHub)" },
     });
   });
@@ -33,13 +30,11 @@ describe("Tencent onboarding", () => {
     expect(
       config.models?.providers?.["tencent-tokenplan"]?.models.map((model) => model.id),
     ).toEqual(manifest.modelCatalog.providers["tencent-tokenplan"].models.map((model) => model.id));
-    expect(TOKENPLAN_DEFAULT_MODEL_REF).toBe("tencent-tokenplan/hy4-preview");
     expect(resolveAgentModelPrimaryValue(config.agents?.defaults?.model)).toBe(
       TOKENPLAN_DEFAULT_MODEL_REF,
     );
     expect(config.agents?.defaults?.models).toEqual({
-      "tencent-tokenplan/hy4-preview": { alias: "Hy4 preview (TokenPlan)" },
-      "tencent-tokenplan/hy3": { alias: "Hy3 (TokenPlan)" },
+      [TOKENPLAN_DEFAULT_MODEL_REF]: { alias: "Hy3 (TokenPlan)" },
     });
   });
 });

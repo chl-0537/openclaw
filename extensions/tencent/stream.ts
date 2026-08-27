@@ -14,16 +14,7 @@ const TENCENT_PROVIDER_IDS: ReadonlySet<string> = new Set([
 type StreamModel = Parameters<StreamFn>[0];
 type StreamOptions = Parameters<StreamFn>[2];
 
-// hy3 (GA) is the only Tencent model with a verified two-rung effort ladder:
-// the gateway accepts `none` and `high` exclusively, so intermediate rungs must
-// collapse upward before dispatch.
-//
-// Scope this map to hy3 ONLY. Do not add new model ids here on the assumption
-// that they behave the same — an unverified collapse silently upgrades a `low`
-// request to `high` (extra thinking tokens and latency, no diagnostic). If a
-// future model turns out to need its own rewrite, give it its own map keyed on
-// that model id.
-const TENCENT_TWO_RUNG_EFFORT_MAP: Readonly<Record<string, string>> = Object.freeze({
+const TENCENT_REASONING_EFFORT_MAP: Readonly<Record<string, string>> = Object.freeze({
   off: "none",
   none: "none",
   minimal: "high",
@@ -33,9 +24,7 @@ const TENCENT_TWO_RUNG_EFFORT_MAP: Readonly<Record<string, string>> = Object.fre
   xhigh: "high",
 });
 
-// Keyed on the model id rather than the provider: hy3 behaves identically on
-// TokenHub and TokenPlan.
-const TENCENT_TWO_RUNG_MODEL_IDS: ReadonlySet<string> = new Set(["hy3"]);
+const TOKENHUB_HY3_PREVIEW_REASONING_EFFORTS = new Set(["none", "low", "high"]);
 
 function resolveRequestedEffort(
   thinkingLevel: OpenAICompatibleThinkingLevel,
@@ -54,15 +43,18 @@ function mapEffortForTencent(model: StreamModel, effort: string | undefined): st
   if (!effort) {
     return undefined;
   }
-  const modelId = (model as { id?: unknown }).id;
-  if (typeof modelId === "string" && TENCENT_TWO_RUNG_MODEL_IDS.has(modelId)) {
-    return TENCENT_TWO_RUNG_EFFORT_MAP[effort];
+  if (
+    (model as { provider?: unknown }).provider === TOKENHUB_PROVIDER_ID &&
+    (model as { id?: unknown }).id === "hy3-preview"
+  ) {
+    if (effort === "off") {
+      return "none";
+    }
+    // Preview supports low directly. Leave unsupported requests to the shared
+    // model fallback that already normalized the underlying payload.
+    return TOKENHUB_HY3_PREVIEW_REASONING_EFFORTS.has(effort) ? effort : undefined;
   }
-  // Every other Tencent model (hy3-preview, hy4-preview, …) is left untouched:
-  // returning undefined makes the wrapper skip the payload patch entirely, so
-  // the shared OpenClaw effort handling — which already normalized the payload
-  // against the model's declared supportedReasoningEfforts — stays in control.
-  return undefined;
+  return TENCENT_REASONING_EFFORT_MAP[effort];
 }
 
 function isTencentCompletionsCall(model: StreamModel): boolean {
