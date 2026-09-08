@@ -118,7 +118,7 @@ describe("tencent provider plugin", () => {
       label,
       hint: `Hy via ${label} Gateway`,
       kind: "api_key",
-      starterModel: `${providerId}/hy3`,
+      starterModel: `${providerId}/hy4-preview`,
       wizard: {
         choiceId,
         choiceLabel: label,
@@ -138,6 +138,7 @@ describe("tencent provider plugin", () => {
           flagValue: "tokenhub-test-key",
           envVar: "TOKENHUB_API_KEY",
           aliases: {
+            "tencent-tokenhub/hy4-preview": { alias: "Hy4 preview (TokenHub)" },
             "tencent-tokenhub/hy3": { alias: "Hy3 (TokenHub)" },
             "tencent-tokenhub/hy3-preview": { alias: "Hy3 preview (TokenHub)" },
           },
@@ -147,7 +148,10 @@ describe("tencent provider plugin", () => {
           choiceId: "tokenplan-api-key",
           flagValue: "tokenplan-test-key",
           envVar: "TOKENPLAN_API_KEY",
-          aliases: { "tencent-tokenplan/hy3": { alias: "Hy3 (TokenPlan)" } },
+          aliases: {
+            "tencent-tokenplan/hy4-preview": { alias: "Hy4 preview (TokenPlan)" },
+            "tencent-tokenplan/hy3": { alias: "Hy3 (TokenPlan)" },
+          },
         },
       ] as const
     ).flatMap((provider) =>
@@ -190,7 +194,7 @@ describe("tencent provider plugin", () => {
           ? manifest.modelCatalog.providers[providerId].models.map((model) => model.id)
           : [],
       );
-      expect(config?.agents?.defaults?.model).toEqual({ primary: `${providerId}/hy3` });
+      expect(config?.agents?.defaults?.model).toEqual({ primary: `${providerId}/hy4-preview` });
       expect(config?.agents?.defaults?.models).toEqual(aliases);
     },
   );
@@ -246,7 +250,7 @@ describe("tencent provider plugin", () => {
     expect(hy4Preview?.contextWindow).toBe(1_024_000);
     expect(hy4Preview?.maxTokens).toBe(64_000);
     expect(hy4Preview?.compat?.supportsReasoningEffort).toBe(true);
-    // hy4-preview shares hy3's two-rung ladder — it does NOT accept `low`.
+    // OpenClaw exposes none/high; raw low acceptance does not prove a distinct low mode.
     expect(hy4Preview?.compat?.supportedReasoningEfforts).toEqual(["none", "high"]);
 
     const hy3Preview = catalogProvider.models?.find((m) => m.id === "hy3-preview");
@@ -286,7 +290,7 @@ describe("tencent provider plugin", () => {
     expect(hy4Preview?.contextWindow).toBe(1_024_000);
     expect(hy4Preview?.maxTokens).toBe(64_000);
     expect(hy4Preview?.compat?.supportsReasoningEffort).toBe(true);
-    // hy4-preview shares hy3's two-rung ladder — it does NOT accept `low`.
+    // OpenClaw exposes none/high; raw low acceptance does not prove a distinct low mode.
     expect(hy4Preview?.compat?.supportedReasoningEfforts).toEqual(["none", "high"]);
   });
 
@@ -458,10 +462,9 @@ describe("tencent provider plugin", () => {
       baseUrl: "https://api.lkeap.cloud.tencent.com/plan/v3",
     });
 
-    // hy4-preview accepts `none` and `high` only, so every intermediate rung
-    // has to reach the gateway as `high` and every off-ish request as `none`.
-    // Leaving a rung unmapped lets the model default to thinking and answer
-    // with reasoning only, which surfaces as an incomplete turn.
+    // Preserve OpenClaw's none/high policy: intermediate efforts become high
+    // and off becomes none. Raw API acceptance of low alone does not establish
+    // a distinct low reasoning mode.
     const expected: Record<string, string> = {
       off: "none",
       none: "none",

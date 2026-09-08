@@ -112,36 +112,33 @@ describe("Tencent config compatibility", () => {
     TENCENT_TOKENHUB_HY3_MODEL_REF,
     TENCENT_TOKENHUB_HY4_PREVIEW_MODEL_REF,
     "openai/gpt-5.5",
-  ])(
-    "preserves an explicit string primary %s while repairing the allowlist",
-    (primary) => {
-      const config = {
-        agents: {
-          defaults: {
-            model: primary,
-            models: {
-              [TENCENT_TOKENHUB_HY3_MODEL_REF]: {},
-            },
+  ])("preserves an explicit string primary %s while repairing the allowlist", (primary) => {
+    const config = {
+      agents: {
+        defaults: {
+          model: primary,
+          models: {
+            [TENCENT_TOKENHUB_HY3_MODEL_REF]: {},
           },
         },
-      } as OpenClawConfig;
+      },
+    } as OpenClawConfig;
 
-      const result = migrateTencentTokenHubModelDefaults(config);
+    const result = migrateTencentTokenHubModelDefaults(config);
 
-      expect(result.config.agents?.defaults?.model).toBe(primary);
-      expect(result.config.agents?.defaults?.models).toEqual({
-        [TENCENT_TOKENHUB_HY3_MODEL_REF]: {
-          alias: "Hy3 (TokenHub)",
-        },
-        [TENCENT_TOKENHUB_HY3_PREVIEW_MODEL_REF]: {
-          alias: "Hy3 preview (TokenHub)",
-        },
-        [TENCENT_TOKENHUB_HY4_PREVIEW_MODEL_REF]: {
-          alias: "Hy4 preview (TokenHub)",
-        },
-      });
-    },
-  );
+    expect(result.config.agents?.defaults?.model).toBe(primary);
+    expect(result.config.agents?.defaults?.models).toEqual({
+      [TENCENT_TOKENHUB_HY3_MODEL_REF]: {
+        alias: "Hy3 (TokenHub)",
+      },
+      [TENCENT_TOKENHUB_HY3_PREVIEW_MODEL_REF]: {
+        alias: "Hy3 preview (TokenHub)",
+      },
+      [TENCENT_TOKENHUB_HY4_PREVIEW_MODEL_REF]: {
+        alias: "Hy4 preview (TokenHub)",
+      },
+    });
+  });
 
   it("repairs configs that only pinned hy4-preview", () => {
     const config = {
